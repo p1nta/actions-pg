@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const packageJson = require('./package.json');
-
 const githubToken = process.env.GITHUB_TOKEN;
 const repo = process.env.GITHUB_REPOSITORY;
 const prNumber = process.env.GITHUB_PR_NUMBER;
