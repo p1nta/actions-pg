@@ -7,7 +7,7 @@ const prNumber = process.env.GITHUB_PR_NUMBER;
 const branchName = process.env.BRANCH_NAME;
 
 function formatTitle(prTitle, prNumber) {
-  const titleContent = prTitle.replace(/^(ui[:,/]]|server[:,/]])/i, '').trimStart();
+  const titleContent = prTitle.replace(/^(ui\W|server\W)/i, '').trimStart();
   const title = '- ' + titleContent.charAt(0).toUpperCase() + titleContent.slice(1);
 
   const titleParts = [title, `#${prNumber}`];
