@@ -10,7 +10,8 @@ jobs:
   update-changelog-and-version:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write           # 'write' access to repository contents
+      pull-requests: write      # 'write' access to pull requests
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
