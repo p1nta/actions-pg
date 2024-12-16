@@ -52,8 +52,11 @@ async function updateChangelog() {
     const changelogPath = path.resolve('./CHANGELOG.md');
     const data = fs.readFileSync(changelogPath, 'utf8');
     const lines = data.split('\n');
-
+    
     if (isCanary) {
+      const packageJsonPath = path.resolve('./package.json');
+      const packageJson = JSON.parse(fs.readFileSync(changelogPath, 'utf8'));
+      
       const today = new Date();
       const formattedDate = today.toLocaleDateString(
         'en-US',
