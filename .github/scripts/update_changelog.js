@@ -4,7 +4,7 @@ const path = require('path');
 const githubToken = process.env.GITHUB_TOKEN;
 const repo = process.env.GITHUB_REPOSITORY;
 const prNumber = process.env.GITHUB_PR_NUMBER;
-const isCanary = process.env.IS_CANARY;
+const branchName = process.env.BRANCH_NAME;
 
 function formatTitle(prTitle, prNumber) {
   const titleContent = prTitle.replace(/^(ui:|server:)/i, '').trimStart();
@@ -51,7 +51,7 @@ async function updateChangelog() {
     const data = fs.readFileSync(changelogPath, 'utf8');
     const lines = data.split('\n');
     
-    if (isCanary) {
+    if (branchName === 'canary') {
       const packageJsonPath = path.resolve('./package.json');
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
       
