@@ -35,6 +35,7 @@ jobs:
 
       - name: Commit changes
         run: |
+          git fetch origin ui/setup-workflow
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git add package.json package-lock.json CHANGELOG.md
