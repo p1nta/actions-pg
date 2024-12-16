@@ -36,6 +36,7 @@ jobs:
 
       - name: Commit changes
         run: |
+          git branch
           git checkout ${{ github.head_ref }}
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
