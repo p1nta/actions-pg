@@ -7,7 +7,7 @@ const prNumber = process.env.GITHUB_PR_NUMBER;
 const branchName = process.env.BRANCH_NAME;
 
 function formatTitle(prTitle, prNumber) {
-  const titleContent = prTitle.replace(/^(ui:|server:)/i, '').trimStart();
+  const titleContent = prTitle.replace(/^(ui[:,/]]|server[:,/]])/i, '').trimStart();
   const title = '- ' + titleContent.charAt(0).toUpperCase() + titleContent.slice(1);
 
   const titleParts = [title, `#${prNumber}`];
@@ -16,11 +16,11 @@ function formatTitle(prTitle, prNumber) {
   const isServer = prTitle.match(/^(server)/i);
 
   if (isUI) {
-    titleParts.push(' (UI)')
+    titleParts.push('(UI)')
   }
 
   if (isServer) {
-    titleParts.push(' (Server)')
+    titleParts.push('(Server)')
   }
 
   return titleParts.join(' ');
