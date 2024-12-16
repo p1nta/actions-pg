@@ -55,7 +55,7 @@ async function updateChangelog() {
     
     if (isCanary) {
       const packageJsonPath = path.resolve('./package.json');
-      const packageJson = JSON.parse(fs.readFileSync(changelogPath, 'utf8'));
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
       
       const today = new Date();
       const formattedDate = today.toLocaleDateString(
