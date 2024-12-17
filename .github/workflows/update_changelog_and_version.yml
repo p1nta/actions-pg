@@ -1,10 +1,12 @@
 name: Update Changelog and Version
 
 on:
-  pull_request:
-    types:
-      - opened
+  push:
     branches: ["ui/*", "server/*", "canary"]
+  # pull_request:
+  #   types:
+  #     - opened
+  #   branches: ["ui/*", "server/*", "canary"]
 
 jobs:
   update-changelog-and-version:
@@ -24,6 +26,7 @@ jobs:
       - name: Bump version
         if: ${{ github.head_ref }} == 'canary'
         run: |
+          echo ${{ github.head_ref }}
           npm version patch --no-git-tag-version
 
       - name: Run Changelog Updated
