@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const child_process = require('child_process');
 
 const githubToken = process.env.GITHUB_TOKEN;
 const repo = process.env.GITHUB_REPOSITORY;
@@ -52,6 +53,8 @@ async function updateChangelog() {
     const lines = data.split('\n');
     
     if (branchName === 'canary') {
+      child_process.execSync('npm version patch --no-git-tag-version');
+
       const packageJsonPath = path.resolve('./package.json');
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
       

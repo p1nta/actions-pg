@@ -21,11 +21,6 @@ jobs:
         with:
           node-version: "20.11.0"
 
-      - name: Bump version
-        if: ${{ github.head_ref }} == "canary"
-        run: |
-          npm version patch --no-git-tag-version
-
       - name: Run Changelog Updated
         run: node .github/scripts/update_changelog.js
         env:
