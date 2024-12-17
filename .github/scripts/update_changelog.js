@@ -3,7 +3,7 @@ const path = require('path');
 
 const githubToken = process.env.GITHUB_TOKEN;
 const repo = process.env.GITHUB_REPOSITORY;
-const prNumber = process.env.GITHUB_PR_NUMBER;
+const prNumber = process.env.GITHUB_PR_NUMBER || 27;
 const branchName = process.env.BRANCH_NAME;
 
 function formatTitle(prTitle, prNumber) {
