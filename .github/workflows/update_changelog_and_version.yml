@@ -4,7 +4,7 @@ on:
   pull_request:
     types:
       - opened
-    branches: ["ui/*", "server/*", "canary"]
+    branches: ["canary", "ui/*", "server/*"]
 
 jobs:
   update-changelog-and-version:
