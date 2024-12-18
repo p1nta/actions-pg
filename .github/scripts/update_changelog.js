@@ -51,13 +51,13 @@ async function updateChangelog() {
     const changelogPath = path.resolve('./CHANGELOG.md');
     const data = fs.readFileSync(changelogPath, 'utf8');
     const lines = data.split('\n');
-    
+
     if (branchName === 'canary') {
       child_process.execSync('npm version patch --no-git-tag-version');
 
       const packageJsonPath = path.resolve('./package.json');
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-      
+
       const today = new Date();
       const formattedDate = today.toLocaleDateString(
         'en-US',
@@ -65,9 +65,12 @@ async function updateChangelog() {
       );
 
       lines[0] = `## Version ${packageJson.version} (${formattedDate})`
-    }
+    } else {
+      const prData = await prResponse.json();
+      const prTitle = formatTitle(prData.title, prData.number);
 
-    lines.splice(1, 0, prTitle);
+      lines.splice(1, 0, prTitle);
+    }
 
     fs.writeFileSync(changelogPath, lines.join('\n'), 'utf8');
   } catch (error) {
