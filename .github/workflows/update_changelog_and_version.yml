@@ -32,6 +32,7 @@ jobs:
       - name: Push changes
         uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           # The arguments for the `git add` command (see the paragraph below for more info)
           add: 'package.json package-lock.json CHANGELOG.md'
 
