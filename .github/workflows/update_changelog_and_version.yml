@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # 'write' access to repository contents
-      pull-requests: read # 'write' access to repository contents
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,7 +57,3 @@ jobs:
           # - exitAtEnd -> the action will go on, every pathspec error will be logged at the end, the step will fail.
           # Default: ignore
           pathspec_error_handling: exitAtEnd
-
-          # Arguments for the git pull command. By default, the action does not pull.
-          # Default: ''
-          pull: "--rebase --autostash ..."
