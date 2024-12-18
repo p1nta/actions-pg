@@ -65,4 +65,4 @@ jobs:
 
           # Arguments for the git pull command. By default, the action does not pull.
           # Default: ''
-          pull: "origin ${{ github.head_ref }}"
+          pull: "origin canary"
