@@ -29,35 +29,17 @@ function formatTitle(prTitle, prNumber) {
 
 async function updateChangelog() {
   try {
-    // Fetch PR details from GitHub API
-    const prResponse = await fetch(
-      `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
-      {
-        headers: {
-          Authorization: `token ${githubToken}`,
-          Accept: 'application/vnd.github.v3+json',
-          'User-Agent': 'https://api.github.com',
-        },
-      }
-    );
-
-    if (!prResponse.ok) {
-      throw new Error(`Failed to fetch PR details: ${prResponse.statusText}`);
-    }
-
-    const prData = await prResponse.json();
-    const prTitle = formatTitle(prData.title, prData.number);
 
     const changelogPath = path.resolve('./CHANGELOG.md');
     const data = fs.readFileSync(changelogPath, 'utf8');
     const lines = data.split('\n');
-    
+
     if (branchName === 'canary') {
       child_process.execSync('npm version patch --no-git-tag-version');
 
       const packageJsonPath = path.resolve('./package.json');
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-      
+
       const today = new Date();
       const formattedDate = today.toLocaleDateString(
         'en-US',
@@ -65,9 +47,27 @@ async function updateChangelog() {
       );
 
       lines[0] = `## Version ${packageJson.version} (${formattedDate})`
-    }
+    } else {
+      // Fetch PR details from GitHub API
+      const prResponse = await fetch(
+        `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
+        {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'https://api.github.com',
+          },
+        }
+      );
 
-    lines.splice(1, 0, prTitle);
+      if (!prResponse.ok) {
+        throw new Error(`Failed to fetch PR details: ${prResponse.statusText}`);
+      }
+      const prData = await prResponse.json();
+      const prTitle = formatTitle(prData.title, prData.number);
+
+      lines.splice(1, 0, prTitle);
+    }
 
     fs.writeFileSync(changelogPath, lines.join('\n'), 'utf8');
   } catch (error) {
