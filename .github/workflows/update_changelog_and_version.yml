@@ -10,7 +10,7 @@ jobs:
   update-changelog-and-version:
     runs-on: ubuntu-latest
     permissions:
-      contents: write           # 'write' access to repository contents
+      contents: write # 'write' access to repository contents
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
         uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
         with:
           # The arguments for the `git add` command (see the paragraph below for more info)
-          add: 'package.json package-lock.json CHANGELOG.md'
+          add: "package.json package-lock.json CHANGELOG.md"
 
           # The name of the user that will be displayed as the author of the commit.
           # Default: depends on the default_author input
@@ -49,7 +49,7 @@ jobs:
 
           # The message for the commit.
           # Default: 'Commit from GitHub Actions (name of the workflow)'
-          message: 'chore: update changelog [skip ci]'
+          message: "chore: update changelog [skip ci]"
 
           # The way the action should handle pathspec errors from the add and remove commands. Three options are available:
           # - ignore -> errors will be logged but the step won't fail
@@ -57,3 +57,7 @@ jobs:
           # - exitAtEnd -> the action will go on, every pathspec error will be logged at the end, the step will fail.
           # Default: ignore
           pathspec_error_handling: exitAtEnd
+
+          # Arguments for the git pull command. By default, the action does not pull.
+          # Default: ''
+          pull: "--rebase --autostash ..."
