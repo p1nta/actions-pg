@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # 'write' access to repository contents
+      pull-requests: read # 'write' access to repository contents
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
