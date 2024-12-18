@@ -66,7 +66,11 @@ async function updateChangelog() {
       const prData = await prResponse.json();
       const prTitle = formatTitle(prData.title, prData.number);
 
-      lines.splice(1, 0, prTitle);
+      if (lines[0].startsWith('## Unreleased')) {
+        lines.splice(1, 0, prTitle);
+      } else {
+        lines.splice(1, 0, '## Unreleased', prTitle, '\n');
+      }
     }
 
     fs.writeFileSync(changelogPath, lines.join('\n'), 'utf8');
