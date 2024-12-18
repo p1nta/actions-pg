@@ -69,7 +69,7 @@ async function updateChangelog() {
       if (lines[0].startsWith('## Unreleased')) {
         lines.splice(1, 0, prTitle);
       } else {
-        lines.unshift('## Unreleased', prTitle);
+        lines.unshift('## Unreleased', prTitle, '');
       }
     }
 
