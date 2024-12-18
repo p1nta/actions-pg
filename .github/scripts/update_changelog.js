@@ -29,24 +29,6 @@ function formatTitle(prTitle, prNumber) {
 
 async function updateChangelog() {
   try {
-    // Fetch PR details from GitHub API
-    const prResponse = await fetch(
-      `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
-      {
-        headers: {
-          Authorization: `token ${githubToken}`,
-          Accept: 'application/vnd.github.v3+json',
-          'User-Agent': 'https://api.github.com',
-        },
-      }
-    );
-
-    if (!prResponse.ok) {
-      throw new Error(`Failed to fetch PR details: ${prResponse.statusText}`);
-    }
-
-    const prData = await prResponse.json();
-    const prTitle = formatTitle(prData.title, prData.number);
 
     const changelogPath = path.resolve('./CHANGELOG.md');
     const data = fs.readFileSync(changelogPath, 'utf8');
@@ -66,6 +48,21 @@ async function updateChangelog() {
 
       lines[0] = `## Version ${packageJson.version} (${formattedDate})`
     } else {
+      // Fetch PR details from GitHub API
+      const prResponse = await fetch(
+        `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
+        {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'https://api.github.com',
+          },
+        }
+      );
+
+      if (!prResponse.ok) {
+        throw new Error(`Failed to fetch PR details: ${prResponse.statusText}`);
+      }
       const prData = await prResponse.json();
       const prTitle = formatTitle(prData.title, prData.number);
 
