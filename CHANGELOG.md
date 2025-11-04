@@ -1,8 +1,8 @@
-## Unreleased
+## Version 1.0.5 (November 4, 2025)
 - Added gh-actions for release
 - Rewrite `update_changelog.js` #1507  (Dev)
 
-## Version 1.0.4 (November 4, 2025)
+## Version 1.0.4 (September 4, 2025)
 - NPM audit fix #1630  (Dev)
 
 ## Version 1.0.3 (December 18, 2024)
