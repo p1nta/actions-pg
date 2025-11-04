@@ -1,3 +1,6 @@
+## Version 1.0.10 (November 4, 2025)
+- Fix release workflow (again)
+
 ## Version 1.0.9 (November 4, 2025)
 - Fix release workflow
 
