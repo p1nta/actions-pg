@@ -1,3 +1,6 @@
+## Version 1.0.9 (November 4, 2025)
+- Fix release workflow
+
 ## Version 1.0.8 (November 4, 2025)
 - Fix teams list fetching  #1015 (UI)
 - Add PartWrapperBase component #1047

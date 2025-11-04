@@ -28,10 +28,10 @@ jobs:
           echo "✅ Extracted version: $VERSION"
 
           # Extract changelog section for that version
-          awk "/^## Version ${VERSION}$/,/^## Version/" CHANGELOG.md | sed '$d' > /tmp/changelog_section.md || true
+          awk "/^## Version ${VERSION}/,/^## Version/" CHANGELOG.md | sed '$d' > /tmp/changelog_section.md || true
           if [ ! -s /tmp/changelog_section.md ]; then
             echo "⚠️ No specific changelog section found, using empty body"
-            cat '' > /tmp/changelog_section.md
+            echo "" > /tmp/changelog_section.md
           fi
       - name: Check or create Git tag
         run: |
