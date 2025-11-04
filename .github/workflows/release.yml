@@ -1,25 +1,13 @@
 name: Create Release
 
 on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - main
-  workflow_dispatch: # Allows manual triggering
+  workflow_call:
 
 jobs:
   create-release:
-    name: Create GitHub Release
-    # Only run if PR was merged (not just closed) and came from canary branch
-    if: >
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.head.ref == 'canary'
     runs-on: ubuntu-latest
-
     permissions:
       contents: write # Required for creating tags and releases
-
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -30,7 +18,7 @@ jobs:
       - name: Extract version and changelog
         id: extract
         run: |
-          # Extract the latest version number from CHANGELOG.md
+          # Extract the latest version from CHANGELOG.md
           VERSION=$(grep -m 1 -oE '^## Version[[:space:]]+[0-9]+(\.[0-9]+)*' CHANGELOG.md | awk '{print $3}')
           if [ -z "$VERSION" ]; then
             echo "❌ No version found in CHANGELOG.md"
@@ -42,10 +30,9 @@ jobs:
           # Extract changelog section for that version
           awk "/^## Version ${VERSION}$/,/^## Version/" CHANGELOG.md | sed '$d' > /tmp/changelog_section.md || true
           if [ ! -s /tmp/changelog_section.md ]; then
-            echo "❌ No specific changelog section found"
-            exit 1
+            echo "⚠️ No specific changelog section found, using empty body"
+            cat '' > /tmp/changelog_section.md
           fi
-
       - name: Check or create Git tag
         run: |
           TAG="v${{ steps.extract.outputs.version }}"
@@ -59,7 +46,6 @@ jobs:
             git tag -a "$TAG" -m "Release $TAG"
             git push origin "$TAG"
           fi
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
