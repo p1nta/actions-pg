@@ -1,6 +1,6 @@
 {
   "name": "actions-pg",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A project for actions-pg",
   "main": "index.js",
   "scripts": {
