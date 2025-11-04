@@ -1,3 +1,8 @@
+## Version 1.0.6 (November 4, 2025)
+- Add Syncpack for automated dependency version management #1616  (Dev)
+- Use `tsc` instead of `build` command for CI workflows related to UI part of application #1237 (Dev)
+- Dev: Added landing deployment to CI workflows #1122
+
 ## Version 1.0.5 (November 4, 2025)
 - Added gh-actions for release
 - Rewrite `update_changelog.js` #1507  (Dev)
