@@ -1,7 +1,3 @@
-## Unreleased
-
-- Release 1.0.5 #66 
-
 ## Version 1.0.5 (November 4, 2025)
 - Added gh-actions for release
 - Rewrite `update_changelog.js` #1507  (Dev)
