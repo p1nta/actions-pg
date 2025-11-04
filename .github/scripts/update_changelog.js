@@ -1,84 +1,147 @@
-const fs = require('fs');
-const path = require('path');
-const child_process = require('child_process');
+const { readFileSync, writeFileSync } = require('fs');
+const { resolve } = require('path');
 
-const githubToken = process.env.GITHUB_TOKEN;
-const repo = process.env.GITHUB_REPOSITORY;
-const prNumber = process.env.GITHUB_PR_NUMBER;
-const branchName = process.env.BRANCH_NAME;
+const BRANCH_PREFIXES = {
+  'ui/': '(UI)',
+  'server/': '(Server)',
+  'regression/': '(Regression)',
+  'landing/': '(Landing)',
+  'dev/': '(Dev)',
+  'api_docs/': '(API Docs)'
+};
 
-function formatTitle(prTitle, prNumber) {
-  const titleContent = prTitle.replace(/^(ui\W|server\W)/i, '').trimStart();
-  const title = '- ' + titleContent.charAt(0).toUpperCase() + titleContent.slice(1);
+const unreleasedTitle = '## Unreleased';
 
-  const titleParts = [title, `#${prNumber}`];
+function getConfig() {
+  const { GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_PR_NUMBER, BRANCH_NAME } = process.env;
 
-  const isUI = prTitle.match(/^(ui)/i);
-  const isServer = prTitle.match(/^(server)/i);
-
-  if (isUI) {
-    titleParts.push('(UI)')
+  if (!GITHUB_TOKEN || !GITHUB_REPOSITORY || !GITHUB_PR_NUMBER || !BRANCH_NAME) {
+    throw new Error('Missing required environment variables');
   }
 
-  if (isServer) {
-    titleParts.push('(Server)')
-  }
-
-  return titleParts.join(' ');
+  return {
+    githubToken: GITHUB_TOKEN,
+    repo: GITHUB_REPOSITORY,
+    prNumber: GITHUB_PR_NUMBER,
+    branchName: BRANCH_NAME
+  };
 }
 
-async function updateChangelog() {
-  try {
+/** Format the PR title for changelog entry
+ * @param {string} title - Original PR title
+ * @param {string} prNumber - PR number
+ * @param {string} branchName - Branch name
+ * @returns {string} Formatted title
+ */
+function formatTitle(title, prNumber, branchName) {
+  // Remove branch prefix from title and capitalize first letter
+  const cleanTitle = title
+    .replace(/^(ui|server|regression|landing|dev|api_docs)[:.\s-]/i, '')
+    .trim();
 
-    const changelogPath = path.resolve('./CHANGELOG.md');
-    const data = fs.readFileSync(changelogPath, 'utf8');
-    const lines = data.split('\n');
+  const formattedTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
 
-    if (branchName === 'canary') {
-      child_process.execSync('npm version patch --no-git-tag-version');
+  // Find matching branch prefix
+  const branchPrefixEntry = Object.entries(BRANCH_PREFIXES)
+    .find(([prefix]) => branchName.startsWith(prefix));
 
-      const packageJsonPath = path.resolve('./package.json');
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  return `- ${formattedTitle} #${prNumber} ${branchPrefixEntry ? ` ${branchPrefixEntry[1]}` : ''}`;
+}
 
-      const today = new Date();
-      const formattedDate = today.toLocaleDateString(
-        'en-US',
-        { day: 'numeric', month: 'long', year: 'numeric' },
-      );
-
-      lines[0] = `## Version ${packageJson.version} (${formattedDate})`
-    } else {
-      // Fetch PR details from GitHub API
-      const prResponse = await fetch(
-        `https://api.github.com/repos/${repo}/pulls/${prNumber}`,
-        {
-          headers: {
-            Authorization: `token ${githubToken}`,
-            Accept: 'application/vnd.github.v3+json',
-            'User-Agent': 'https://api.github.com',
-          },
-        }
-      );
-
-      if (!prResponse.ok) {
-        throw new Error(`Failed to fetch PR details: ${prResponse.statusText}`);
-      }
-      const prData = await prResponse.json();
-      const prTitle = formatTitle(prData.title, prData.number);
-
-      if (lines[0].startsWith('## Unreleased')) {
-        lines.splice(1, 0, prTitle);
-      } else {
-        lines.unshift('## Unreleased', prTitle, '');
+async function fetchPRData(config) {
+  const response = await fetch(
+    `https://api.github.com/repos/${config.repo}/pulls/${config.prNumber}`,
+    {
+      headers: {
+        'Authorization': `token ${config.githubToken}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'changelog-updater'
       }
     }
+  );
 
-    fs.writeFileSync(changelogPath, lines.join('\n'), 'utf8');
+  if (!response.ok) {
+    throw new Error(`GitHub API error: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Insert PR title into "## Unreleased" section
+ * @param {string} content - Current changelog content
+ * @param {string} prTitle - Formatted PR title to insert
+ * @returns {string} Updated changelog content
+ */
+function updateUnreleasedSection(content, prTitle) {
+  const lines = content.split('\n');
+  // Find next section index
+  const nextSectionIndex = lines.findIndex((line, i) => !line.startsWith(unreleasedTitle) && line.startsWith('##'));
+
+  if (nextSectionIndex === -1) {
+    // Remove empty lines
+    const filteredLines = lines.filter(line => line.trim() !== '');
+
+    if (filteredLines.length === 0 || !filteredLines[0].startsWith(unreleasedTitle)) {
+      filteredLines.unshift(unreleasedTitle);
+    }
+
+    // Insert PR title after "## Unreleased"
+    filteredLines.splice(1, 0, '', prTitle);
+    filteredLines.push('');
+
+    return filteredLines.join('\n');
+  }
+
+  // get lines of "## Unreleased" section
+  const unreleasedLines = lines.slice(0, nextSectionIndex);
+  // Remove empty lines
+  const filteredUnreleasedLines = unreleasedLines.filter(line => line.trim() !== '');
+
+  if (filteredUnreleasedLines.length === 0 || !filteredUnreleasedLines[0].startsWith(unreleasedTitle)) {
+    filteredUnreleasedLines.unshift(unreleasedTitle);
+  }
+
+  // Insert PR title after "## Unreleased"
+  filteredUnreleasedLines.splice(1, 0, '', prTitle);
+  // insert ## Unreleased section back
+  lines.splice(0, nextSectionIndex, ...filteredUnreleasedLines, '');
+
+  return lines.join('\n');
+}
+
+async function updateChangelog(
+  changelogPath = resolve('./CHANGELOG.md'),
+  resultPath = resolve('./CHANGELOG.md'),
+  config = getConfig(),
+  pullRequestInfo = null
+) {
+  try {
+
+    // Read current changelog
+    const currentContent = readFileSync(changelogPath, 'utf8');
+
+    // Fetch PR data and format title
+    const prData = pullRequestInfo || await fetchPRData(config);
+    const prTitle = formatTitle(prData.title, prData.number, config.branchName);
+
+    // Update changelog content
+    const updatedContent = updateUnreleasedSection(currentContent, prTitle);
+
+    // Write updated changelog
+    writeFileSync(resultPath, updatedContent, 'utf8');
+
+    console.log(`✅ Added "${prTitle}" to changelog`);
+
   } catch (error) {
-    console.error('Error updating changelog:', error.message);
+    console.error('❌ Error updating changelog:', error.message);
     process.exit(1);
   }
 }
 
-updateChangelog();
+// Run if called directly
+if (require.main === module) {
+  updateChangelog();
+}
 
+module.exports = { updateChangelog };
