@@ -18,17 +18,35 @@ jobs:
       - name: Extract version and changelog
         id: extract
         run: |
-          # Extract the latest version from CHANGELOG.md
-          VERSION=$(grep -m 1 -oE '^## Version[[:space:]]+[0-9]+(\.[0-9]+)*' CHANGELOG.md | awk '{print $3}')
+          # Extract version from package.json
+          VERSION=$(node -p "require('./package.json').version")
           if [ -z "$VERSION" ]; then
-            echo "❌ No version found in CHANGELOG.md"
+            echo "❌ No version found in package.json"
             exit 1
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Extracted version: $VERSION"
+          echo "✅ Extracted version from package.json: $VERSION"
+
+          # Check that the version exists in CHANGELOG.md
+          if ! grep -q "^## Version[[:space:]]\+$VERSION" CHANGELOG.md; then
+            echo "❌ Version $VERSION from package.json not found in CHANGELOG.md"
+            echo "Please add a changelog entry for version $VERSION"
+            exit 1
+          fi
+          echo "✅ Changes for version $VERSION found in CHANGELOG.md"
 
           # Extract changelog section for that version
-          CHANGELOG=$(awk '/^## Version/ {if (found) exit; found=1; next} found' CHANGELOG.md | sed '/^## Version/,$d')
+          CHANGELOG=$(awk -v ver="$VERSION" '
+            /^## Version/ {
+              if ($3 == ver) {
+                found=1
+                next
+              } else if (found) {
+                exit
+              }
+            }
+            found { print }
+          ' CHANGELOG.md)
 
           if [ -z "$CHANGELOG" ]; then
             echo "⚠️ No specific changelog section found, using empty body"
