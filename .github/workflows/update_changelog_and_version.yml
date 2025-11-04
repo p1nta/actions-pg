@@ -4,23 +4,24 @@ on:
   pull_request:
     types:
       - opened
-    branches: ["canary", "main"]
+    branches: ["canary"]
 
 jobs:
   update-changelog-and-version:
     runs-on: ubuntu-latest
     permissions:
       contents: write # 'write' access to repository contents
+      pull-requests: read
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20.11.0"
+          node-version: "24.8.0"
 
       - name: Run Changelog Updated
         run: node .github/scripts/update_changelog.js

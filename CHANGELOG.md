@@ -1,7 +1,3 @@
-## Unreleased
-
-- Release 1.0.6 #67 
-
 ## Version 1.0.6 (November 4, 2025)
 - Add Syncpack for automated dependency version management #1616  (Dev)
 - Use `tsc` instead of `build` command for CI workflows related to UI part of application #1237 (Dev)
