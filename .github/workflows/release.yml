@@ -1,0 +1,57 @@
+name: Create Release
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  create-release:
+    # Only run if PR was merged (not just closed) and came from canary branch
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'canary'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required for creating releases and tags
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0 # Fetch all history for proper tagging
+
+      - name: Extract version and changelog
+        id: extract
+        run: |
+          # Extract the latest version from CHANGELOG.md
+          VERSION=$(grep -m 1 "^## Version" CHANGELOG.md | sed 's/^## Version \([0-9.]*\).*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+          # Extract the changelog section for this version
+          # This gets everything between the first "## Version" and the next "## Version" or end of file
+          CHANGELOG=$(awk '/^## Version/ {if (found) exit; found=1; next} found' CHANGELOG.md | sed '/^## Version/,$d')
+
+          # Save changelog to a file to handle multiline content properly
+          echo "$CHANGELOG" > /tmp/changelog_section.md
+          echo "Extracted changelog section"
+
+      - name: Create Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.extract.outputs.version }}" -m "Release v${{ steps.extract.outputs.version }}"
+          git push origin "v${{ steps.extract.outputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.extract.outputs.version }}
+          name: Version ${{ steps.extract.outputs.version }}
+          body_path: /tmp/changelog_section.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
