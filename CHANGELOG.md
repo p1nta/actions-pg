@@ -1,4 +1,4 @@
-## Unreleased
+## Version 1.0.13 (November 20, 2025)
 
 - Added new log #74  (UI)
 
