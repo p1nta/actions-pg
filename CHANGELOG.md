@@ -1,3 +1,7 @@
+## Version 1.0.13 (November 20, 2025)
+
+- Added new log #74  (UI)
+
 ## Version 1.0.12 (November 4, 2025)
 - Update version getting
 
